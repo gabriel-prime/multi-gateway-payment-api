@@ -3,6 +3,7 @@ import hash from '@adonisjs/core/services/hash'
 import { compose } from '@adonisjs/core/helpers'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import { type AccessToken, DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
+import { beforeSave } from '@adonisjs/lucid/orm'
 
 export default class User extends compose(UserSchema, withAuthFinder(hash)) {
   static accessTokens = DbAccessTokensProvider.forModel(User)
@@ -14,5 +15,12 @@ export default class User extends compose(UserSchema, withAuthFinder(hash)) {
       return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase()
     }
     return `${first.slice(0, 2)}`.toUpperCase()
+  }
+
+  @beforeSave()
+  static async hashPassword(user: { $dirty: { password?: boolean }; password?: string }) {
+    if (user.$dirty.password && user.password) {
+      user.password = await hash.make(user.password)
+    }
   }
 }
