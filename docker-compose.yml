@@ -1,0 +1,48 @@
+# version is obsolete in Compose V2; kept for compatibility with older clients
+
+services:
+  api:
+    image: node:20-bookworm-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "3333:3333"
+    command: npm run dev
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=betalent
+      - DB_PASSWORD=betalent_pass
+      - DB_DATABASE=betalent_db
+      - GATEWAY1_URL=http://gateways-mock:3001
+      - GATEWAY2_URL=http://gateways-mock:3002
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: betalent_db
+      MYSQL_USER: betalent
+      MYSQL_PASSWORD: betalent_pass
+      MYSQL_ROOT_PASSWORD: root_pass
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gateways-mock:
+    image: matheusprotzen/gateways-mock
+    ports:
+      - "3001:3001"
+      - "3002:3002"
+
+volumes:
+  mysql_data:
