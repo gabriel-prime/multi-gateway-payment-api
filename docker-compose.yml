@@ -2,12 +2,12 @@
 
 services:
   api:
-    image: node:20-bookworm-slim
+    image: node:24-bookworm-slim
     working_dir: /app
     volumes:
       - .:/app
     ports:
-      - "3333:3333"
+      - '3333:3333'
     command: npm run dev
     environment:
       - DB_HOST=mysql
@@ -24,7 +24,7 @@ services:
   mysql:
     image: mysql:8.0
     ports:
-      - "3306:3306"
+      - '3306:3306'
     environment:
       MYSQL_DATABASE: betalent_db
       MYSQL_USER: betalent
@@ -33,16 +33,27 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
       interval: 10s
       timeout: 5s
       retries: 5
 
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - '8080:80'
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+      - MYSQL_ROOT_PASSWORD=root_pass
+    depends_on:
+      - mysql
+
   gateways-mock:
     image: matheusprotzen/gateways-mock
     ports:
-      - "3001:3001"
-      - "3002:3002"
+      - '3001:3001'
+      - '3002:3002'
 
 volumes:
   mysql_data:
