@@ -2,7 +2,6 @@ import vine from '@vinejs/vine'
 import type { FieldContext } from '@vinejs/vine/types'
 import db from '@adonisjs/lucid/services/db'
 
-/** Verifica se um product id existe na tabela products */
 const productExistsRule = vine.createRule(
   async (value: unknown, _: undefined, field: FieldContext) => {
     if (typeof value !== 'number') return

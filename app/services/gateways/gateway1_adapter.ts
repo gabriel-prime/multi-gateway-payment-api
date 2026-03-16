@@ -3,11 +3,7 @@ import { postJson } from './http.js'
 import type { PaymentGateway } from './gateway_interface.js'
 import type { ChargeDTO, GatewayChargeResult } from './types.js'
 
-/**
- * Adapter para o Gateway 1.
- * Fluxo: POST /login → obtém Bearer Token → POST /transactions
- * Reembolso: POST /transactions/:id/charge_back
- */
+/** Gateway 1: login para Bearer token, depois POST /transactions. Reembolso: POST /transactions/:id/charge_back */
 export default class Gateway1Adapter implements PaymentGateway {
   private readonly baseUrl: string
 

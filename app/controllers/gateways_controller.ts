@@ -7,7 +7,6 @@ export default class GatewaysController {
     return response.ok(gateways)
   }
 
-  /** Ativa ou desativa um gateway */
   async toggle({ params, response }: HttpContext) {
     const gateway = await Gateway.findOrFail(params.id)
     gateway.isActive = !gateway.isActive
@@ -15,7 +14,6 @@ export default class GatewaysController {
     return response.ok(gateway)
   }
 
-  /** Atualiza a prioridade de um gateway */
   async updatePriority({ params, request, response }: HttpContext) {
     const gateway = await Gateway.findOrFail(params.id)
     const { priority } = request.only(['priority'])

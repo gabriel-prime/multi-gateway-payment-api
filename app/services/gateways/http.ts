@@ -1,6 +1,5 @@
 /**
- * Wrapper sobre o fetch nativo do Node 20.
- * Lança erro automaticamente em respostas não-OK (4xx / 5xx).
+ * Wrapper sobre fetch nativo. Lança em respostas não-OK (4xx/5xx). Suporta timeout via AbortSignal.
  */
 async function request<T>(
   url: string,
@@ -18,7 +17,6 @@ async function request<T>(
     throw new Error(`HTTP ${res.status} – ${text}`)
   }
 
-  // 204 No Content ou body vazio
   const text = await res.text()
   return (text ? JSON.parse(text) : undefined) as T
 }

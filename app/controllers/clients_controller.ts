@@ -9,7 +9,6 @@ export default class ClientsController {
     return response.ok(clients)
   }
 
-  /** Retorna os dados do cliente com todas as suas compras */
   async show({ params, response }: HttpContext) {
     const client = await Client.query()
       .where('id', params.id)

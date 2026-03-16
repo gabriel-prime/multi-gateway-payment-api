@@ -6,7 +6,6 @@ export default class extends BaseSeeder {
     const existing = await User.findBy('email', 'admin@betalent.tech')
 
     if (existing) {
-      // merge + save garante que o @beforeSave seja disparado
       existing.merge({
         password: 'password123',
         role: 'ADMIN',

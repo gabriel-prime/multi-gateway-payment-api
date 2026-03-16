@@ -1,7 +1,5 @@
 /**
- * Intercepta o fetch nativo para simular respostas dos gateways em testes.
- * Apenas URLs dos gateways (porta 3001/3002) são interceptadas.
- * Requisições da API (porta 3333) passam normalmente.
+ * Intercepta fetch para URLs dos gateways (portas 3001/3002). Requisições da API (3333) não são interceptadas.
  */
 
 type FetchFn = typeof fetch
@@ -28,7 +26,6 @@ export function restoreGatewayFetch() {
   }
 }
 
-/** Ambos os gateways retornam sucesso */
 export function mockBothGatewaysSuccess() {
   mockFetch(async (url) => {
     if (url.includes('/login')) {
@@ -53,11 +50,11 @@ export function mockBothGatewaysSuccess() {
   })
 }
 
-/** Gateway 1 falha, Gateway 2 responde com sucesso (testa o fallback) */
+/** Gateway 1 falha, Gateway 2 responde com sucesso (teste de fallback) */
 export function mockGateway1FailsGateway2Succeeds() {
   mockFetch(async (url) => {
     if (url.includes(':3001') || url.includes('gateways-mock:3001')) {
-      throw new Error('Gateway 1: connection refused (simulado em teste)')
+      throw new Error('Gateway 1: connection refused (test mock)')
     }
     if (url.includes('/transacoes')) {
       return new Response(JSON.stringify({ id: 'gw2-fallback-id-002' }), {
@@ -69,9 +66,8 @@ export function mockGateway1FailsGateway2Succeeds() {
   })
 }
 
-/** Todos os gateways falham */
 export function mockAllGatewaysFail() {
   mockFetch(async () => {
-    throw new Error('Todos os gateways falharam (simulado em teste)')
+    throw new Error('All gateways failed (test mock)')
   })
 }

@@ -9,13 +9,11 @@ export default class CheckoutController {
   async store({ request, response }: HttpContext) {
     const payload = await request.validateUsing(checkoutValidator)
 
-    // 1. Upsert do cliente (cria se não existir, atualiza o nome se já existir)
     const client = await Client.updateOrCreate(
       { email: payload.email },
       { name: payload.name, email: payload.email }
     )
 
-    // 2. Busca os produtos (existência já validada pelo checkoutValidator) e calcula o total
     const productIds = payload.products.map((p) => p.id)
     const products = await Product.findMany(productIds)
 
@@ -25,7 +23,6 @@ export default class CheckoutController {
       totalAmount += product.amount * item.quantity
     }
 
-    // 3. Tenta a cobrança com fallback automático entre gateways
     const paymentService = new PaymentService()
     let chargeResult
 
@@ -43,7 +40,6 @@ export default class CheckoutController {
       })
     }
 
-    // 4. Persiste a transação
     const transaction = await Transaction.create({
       clientId: client.id,
       gatewayId: chargeResult.gatewayId,
@@ -53,7 +49,6 @@ export default class CheckoutController {
       cardLastNumbers: payload.cardNumber.slice(-4),
     })
 
-    // 5. Vincula produtos na tabela pivot com a quantidade
     const pivotData = payload.products.reduce(
       (acc, item) => {
         acc[item.id] = { quantity: item.quantity }
@@ -63,7 +58,6 @@ export default class CheckoutController {
     )
     await transaction.related('products').attach(pivotData)
 
-    // 6. Carrega as relações para resposta completa
     await transaction.load('client')
     await transaction.load('gateway')
     await transaction.load('products')

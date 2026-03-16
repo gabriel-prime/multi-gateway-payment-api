@@ -27,7 +27,6 @@ export default class TransactionsController {
     return response.ok(transaction)
   }
 
-  /** Realiza o reembolso da compra junto ao gateway original */
   async refund({ params, response }: HttpContext) {
     const transaction = await Transaction.findOrFail(params.id)
 

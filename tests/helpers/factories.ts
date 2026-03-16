@@ -25,12 +25,11 @@ export async function createGateways() {
 
 export async function createProduct(overrides: Partial<{ name: string; amount: number }> = {}) {
   return Product.create({
-    name: overrides.name ?? `Produto ${uid()}`,
+    name: overrides.name ?? `Product ${uid()}`,
     amount: overrides.amount ?? 1000,
   })
 }
 
-/** Faz login e retorna o bearer token */
 export async function loginAs(client: any, user: User): Promise<string> {
   const res = await client.post('/login').json({ email: user.email, password: 'password123' })
   return res.body().token.token as string

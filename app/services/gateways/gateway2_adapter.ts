@@ -3,11 +3,7 @@ import { postJson } from './http.js'
 import type { PaymentGateway } from './gateway_interface.js'
 import type { ChargeDTO, GatewayChargeResult } from './types.js'
 
-/**
- * Adapter para o Gateway 2.
- * Headers fixos: Gateway-Auth-Token + Gateway-Auth-Secret
- * Reembolso: POST /transacoes/reembolso { id }
- */
+/** Gateway 2: headers fixos (Gateway-Auth-Token, Gateway-Auth-Secret). Reembolso: POST /transacoes/reembolso { id } */
 export default class Gateway2Adapter implements PaymentGateway {
   private readonly baseUrl: string
   private readonly authHeaders: Record<string, string>

@@ -6,18 +6,13 @@ import Gateway2Adapter from './gateways/gateway2_adapter.js'
 import type { PaymentGateway } from './gateways/gateway_interface.js'
 import type { ChargeDTO, ChargeResult } from './gateways/types.js'
 
-/** Mapeamento do nome do gateway (DB) para o adapter correspondente */
+/** Mapeamento nome do gateway (DB) → adapter. Fallback: tenta gateways ativos por prioridade; lança se todos falharem. */
 const ADAPTERS: Record<string, new () => PaymentGateway> = {
   'Gateway 1': Gateway1Adapter,
   'Gateway 2': Gateway2Adapter,
 }
 
 export default class PaymentService {
-  /**
-   * Tenta realizar a cobrança percorrendo os gateways ativos em ordem de prioridade.
-   * Se um gateway falhar (rede, timeout, 4xx/5xx), loga o erro e tenta o próximo.
-   * Lança exceção somente se todos os gateways falharem.
-   */
   async charge(data: ChargeDTO): Promise<ChargeResult> {
     const gateways = await Gateway.query().where('is_active', true).orderBy('priority', 'asc')
 
@@ -56,9 +51,6 @@ export default class PaymentService {
     throw new Error('Todos os gateways de pagamento falharam. Tente novamente mais tarde.')
   }
 
-  /**
-   * Realiza o reembolso de uma transação no gateway que a processou originalmente.
-   */
   async refund(transaction: Transaction): Promise<void> {
     if (!transaction.externalId) {
       throw new Error('Transação sem ID externo — não é possível fazer reembolso.')
