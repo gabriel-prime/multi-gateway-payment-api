@@ -5,8 +5,9 @@ import { defineConfig } from '@adonisjs/lucid'
 const dbConfig = defineConfig({
   /**
    * Default connection used for all queries.
+   * Tests use SQLite in-memory to run without Docker.
    */
-  connection: 'mysql',
+  connection: app.inTest ? 'sqlite' : 'mysql',
 
   connections: {
     /**
@@ -16,7 +17,7 @@ const dbConfig = defineConfig({
       client: 'better-sqlite3',
 
       connection: {
-        filename: app.tmpPath('db.sqlite3'),
+        filename: app.inTest ? ':memory:' : app.tmpPath('db.sqlite3'),
       },
 
       useNullAsDefault: true,

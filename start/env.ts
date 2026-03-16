@@ -34,5 +34,10 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   // Gateways mock (BeTalent)
   GATEWAY1_URL: Env.schema.string.optional(),
+  GATEWAY1_EMAIL: Env.schema.string.optional(),
+  GATEWAY1_TOKEN: Env.schema.string.optional(),
+
   GATEWAY2_URL: Env.schema.string.optional(),
+  GATEWAY2_AUTH_TOKEN: Env.schema.string.optional(),
+  GATEWAY2_AUTH_SECRET: Env.schema.string.optional(),
 })
