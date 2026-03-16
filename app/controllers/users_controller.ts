@@ -3,8 +3,10 @@ import User from '#models/user'
 import { createUserValidator, getUpdateUserValidator } from '#validators/user'
 
 export default class UsersController {
-  async index({ response }: HttpContext) {
-    const users = await User.all()
+  async index({ request, response }: HttpContext) {
+    const page = request.input('page', 1)
+    const perPage = Math.min(request.input('perPage', 20), 100)
+    const users = await User.query().orderBy('full_name', 'asc').paginate(page, perPage)
     return response.ok(users)
   }
 

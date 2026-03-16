@@ -9,59 +9,65 @@
 
 import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
-import { controllers } from '#generated/controllers'
+
 const AuthController = () => import('#controllers/auth_controller')
 const UsersController = () => import('#controllers/users_controller')
 const ProductsController = () => import('#controllers/products_controller')
+const CheckoutController = () => import('#controllers/checkout_controller')
+const GatewaysController = () => import('#controllers/gateways_controller')
+const ClientsController = () => import('#controllers/clients_controller')
+const TransactionsController = () => import('#controllers/transactions_controller')
 
-router.get('/', () => {
-  return { hello: 'world' }
-})
+// ──────────────────────────────────────────────
+// Rotas Públicas
+// ──────────────────────────────────────────────
 
-// Login (BeTalent – Dia 2)
 router.post('/login', [AuthController, 'login'])
 
-// Rotas protegidas por autenticação
+// Realizar uma compra (público – qualquer pessoa pode comprar)
+router.post('/checkout', [CheckoutController, 'store'])
+
+// ──────────────────────────────────────────────
+// Rotas Privadas (exigem autenticação)
+// ──────────────────────────────────────────────
+
 router
   .group(() => {
+    // Usuário logado
     router.get('/me', (ctx) => ctx.response.ok(ctx.auth.user?.serialize()))
+
+    // ── Gateways (apenas ADMIN) ──────────────────
     router
-      .get('/admin-only', (ctx) => ctx.response.ok({ message: 'Acesso admin autorizado' }))
+      .group(() => {
+        router.get('/', [GatewaysController, 'index'])
+        router.patch('/:id/toggle', [GatewaysController, 'toggle'])
+        router.patch('/:id/priority', [GatewaysController, 'updatePriority'])
+      })
+      .prefix('/gateways')
       .use(middleware.role({ guards: ['ADMIN'] }))
+
+    // ── Usuários (ADMIN e MANAGER) ───────────────
+    router
+      .resource('users', UsersController)
+      .apiOnly()
+      .use('*', middleware.role({ guards: ['ADMIN', 'MANAGER'] }))
+
+    // ── Produtos ─────────────────────────────────
+    // index e show: qualquer autenticado
+    // store, update, destroy: ADMIN, MANAGER, FINANCE
+    router
+      .resource('products', ProductsController)
+      .apiOnly()
+      .use(['store', 'update', 'destroy'], middleware.role({ guards: ['ADMIN', 'MANAGER', 'FINANCE'] }))
+
+    // ── Clientes ─────────────────────────────────
+    router.get('/clients', [ClientsController, 'index'])
+    router.get('/clients/:id', [ClientsController, 'show'])
+
+    // ── Transações ───────────────────────────────
+    router.get('/transactions', [TransactionsController, 'index'])
+    router.get('/transactions/:id', [TransactionsController, 'show'])
+    router.post('/transactions/:id/refund', [TransactionsController, 'refund'])
+      .use(middleware.role({ guards: ['ADMIN', 'FINANCE'] }))
   })
   .use(middleware.auth())
-
-// CRUD Usuários – apenas ADMIN e MANAGER
-router
-  .resource('users', UsersController)
-  .apiOnly()
-  .use('*', middleware.auth())
-  .use('*', middleware.role({ guards: ['ADMIN', 'MANAGER'] }))
-
-// CRUD Produtos – listar/ver para todos autenticados; criar/editar/remover para ADMIN, MANAGER, FINANCE
-router
-  .resource('products', ProductsController)
-  .apiOnly()
-  .use('*', middleware.auth())
-  .use(['store', 'update', 'destroy'], middleware.role({ guards: ['ADMIN', 'MANAGER', 'FINANCE'] }))
-
-router
-  .group(() => {
-    router
-      .group(() => {
-        router.post('signup', [controllers.NewAccount, 'store'])
-        router.post('login', [controllers.AccessToken, 'store'])
-        router.post('logout', [controllers.AccessToken, 'destroy']).use(middleware.auth())
-      })
-      .prefix('auth')
-      .as('auth')
-
-    router
-      .group(() => {
-        router.get('/profile', [controllers.Profile, 'show'])
-      })
-      .prefix('account')
-      .as('profile')
-      .use(middleware.auth())
-  })
-  .prefix('/api/v1')

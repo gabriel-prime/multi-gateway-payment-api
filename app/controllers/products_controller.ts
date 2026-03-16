@@ -3,8 +3,10 @@ import Product from '#models/product'
 import { createProductValidator, updateProductValidator } from '#validators/product'
 
 export default class ProductsController {
-  async index({ response }: HttpContext) {
-    const products = await Product.all()
+  async index({ request, response }: HttpContext) {
+    const page = request.input('page', 1)
+    const perPage = Math.min(request.input('perPage', 20), 100)
+    const products = await Product.query().orderBy('name', 'asc').paginate(page, perPage)
     return response.ok(products)
   }
 
