@@ -14,6 +14,7 @@ export default class Transaction extends TransactionSchema {
 
   @manyToMany(() => Product, {
     pivotTable: 'transaction_products',
+    pivotColumns: ['quantity'],
   })
   declare products: ManyToMany<typeof Product>
 }
